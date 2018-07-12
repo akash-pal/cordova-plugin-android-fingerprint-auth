@@ -244,9 +244,15 @@ public class FingerprintAuthenticationDialogFragment extends DialogFragment
             if (resultCode == getActivity().RESULT_OK) {
                 FingerprintAuth.onAuthenticated(false /* used backup */, null);
             } else {
-                // The user canceled or didn’t complete the lock screen
-                // operation. Go to error/cancellation flow.
-                FingerprintAuth.onCancelled();
+                // The user canceled or didn’t complete the lock screen operation. Go to error/cancellation flow.
+                // Commenting below line as We have 2 Cancelled Event
+                // 1 is Dialog Cancel Event
+                // 2 is Backup Activity Cancel event
+                // So to Differentiate the Event We have created the new method call onBackupCancelled
+                // and also created a new Enum Variable to identify that cancel event is fired from Backup page
+                // Below is common Cancelled Event
+                // FingerprintAuth.onCancelled();
+                FingerprintAuth.onBackupCancelled();
             }
             dismissAllowingStateLoss();
         }

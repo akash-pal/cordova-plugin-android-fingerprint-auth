@@ -98,7 +98,8 @@ public class FingerprintAuth extends CordovaPlugin {
         MISSING_ACTION_PARAMETERS,
         MISSING_PARAMETERS,
         NO_SUCH_ALGORITHM_EXCEPTION,
-        SECURITY_EXCEPTION
+        SECURITY_EXCEPTION,
+        FINGERPRINT_BACKUP_CANCELLED
     }
 
     public PluginAction mAction;
@@ -334,7 +335,9 @@ public class FingerprintAuth extends CordovaPlugin {
                                     public void run() {
                                         // Set up the crypto object for later. The object will be authenticated by use
                                         // of the fingerprint.
+
                                         mFragment = new FingerprintAuthenticationDialogFragment();
+
                                         if (initCipher()) {
                                             mFragment.setCancelable(false);
                                             // Show the fingerprint dialog. The user has the option to use the fingerprint with
@@ -675,6 +678,13 @@ public class FingerprintAuth extends CordovaPlugin {
         mCallbackContext.error(PluginError.FINGERPRINT_CANCELLED.name());
     }
 
+    /**
+     * Cancelled Event from Backup page
+     */
+    public static void onBackupCancelled() {
+        mCallbackContext.error(PluginError.FINGERPRINT_BACKUP_CANCELLED.name());
+    }
+
     public static void onError(CharSequence errString) {
         mCallbackContext.error(PluginError.FINGERPRINT_ERROR.name());
         Log.e(TAG, errString.toString());
@@ -732,7 +742,7 @@ public class FingerprintAuth extends CordovaPlugin {
 
     /*********************************************************************
         Backup for older devices without fingerprint hardware/software
-    **********************************************************************/
+     **********************************************************************/
     private boolean useBackupLockScreen() {
         if (!mKeyguardManager.isKeyguardSecure()) {
             return false;
@@ -745,8 +755,8 @@ public class FingerprintAuth extends CordovaPlugin {
     private void showAuthenticationScreen() {
         Intent intent = mKeyguardManager.createConfirmDeviceCredentialIntent(null, null);
         if (intent != null) {
-          cordova.setActivityResultCallback(this);
-          cordova.getActivity().startActivityForResult(intent, REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS);
+            cordova.setActivityResultCallback(this);
+            cordova.getActivity().startActivityForResult(intent, REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS);
         }
     }
 
@@ -754,9 +764,9 @@ public class FingerprintAuth extends CordovaPlugin {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS) {
             if (resultCode == cordova.getActivity().RESULT_OK) {
-              onAuthenticated(false, null);
+                onAuthenticated(false, null);
             } else {
-              onCancelled();
+                onBackupCancelled();
             }
         }
     }
